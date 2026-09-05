@@ -4,6 +4,8 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module.js';
 
+const TEST_API_KEY = 'e2e-test-api-key';
+
 describe('Auth (e2e)', () => {
   let app: INestApplication<App>;
 
@@ -12,6 +14,7 @@ describe('Auth (e2e)', () => {
 
   beforeAll(async () => {
     process.env.JWT_SECRET = 'e2e-test-secret';
+    process.env.API_KEY = TEST_API_KEY;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -35,6 +38,7 @@ describe('Auth (e2e)', () => {
   it('registers a new user', async () => {
     const res = await request(app.getHttpServer())
       .post('/auth/register')
+      .set('x-api-key', TEST_API_KEY)
       .send({ email, password, name: 'Test User' })
       .expect(201);
 
@@ -48,13 +52,26 @@ describe('Auth (e2e)', () => {
   it('rejects duplicate emails', async () => {
     await request(app.getHttpServer())
       .post('/auth/register')
+      .set('x-api-key', TEST_API_KEY)
       .send({ email, password })
       .expect(409);
+  });
+
+  it('rejects requests without an API key', async () => {
+    await request(app.getHttpServer()).get('/').expect(401);
+  });
+
+  it('rejects requests with an invalid API key', async () => {
+    await request(app.getHttpServer())
+      .get('/')
+      .set('x-api-key', 'wrong-key')
+      .expect(401);
   });
 
   it('logs in and gets tokens', async () => {
     const res = await request(app.getHttpServer())
       .post('/auth/login')
+      .set('x-api-key', TEST_API_KEY)
       .send({ email, password })
       .expect(200);
 
@@ -65,6 +82,7 @@ describe('Auth (e2e)', () => {
   it('rejects invalid credentials', async () => {
     await request(app.getHttpServer())
       .post('/auth/login')
+      .set('x-api-key', TEST_API_KEY)
       .send({ email, password: 'wrong-password' })
       .expect(401);
   });
@@ -72,6 +90,7 @@ describe('Auth (e2e)', () => {
   it('validates DTOs (forbids unknown properties)', async () => {
     await request(app.getHttpServer())
       .post('/auth/login')
+      .set('x-api-key', TEST_API_KEY)
       .send({ email, password, surprise: true })
       .expect(400);
   });
@@ -79,11 +98,13 @@ describe('Auth (e2e)', () => {
   it('refreshes the access token', async () => {
     const login = await request(app.getHttpServer())
       .post('/auth/login')
+      .set('x-api-key', TEST_API_KEY)
       .send({ email, password })
       .expect(200);
 
     const res = await request(app.getHttpServer())
       .post('/auth/refresh')
+      .set('x-api-key', TEST_API_KEY)
       .send({ refreshToken: login.body.refreshToken })
       .expect(200);
 
@@ -94,22 +115,28 @@ describe('Auth (e2e)', () => {
   it('rejects an invalid refresh token', async () => {
     await request(app.getHttpServer())
       .post('/auth/refresh')
+      .set('x-api-key', TEST_API_KEY)
       .send({ refreshToken: 'not-a-real-token' })
       .expect(401);
   });
 
   it('denies access to protected routes without a token', async () => {
-    await request(app.getHttpServer()).get('/users').expect(401);
+    await request(app.getHttpServer())
+      .get('/users')
+      .set('x-api-key', TEST_API_KEY)
+      .expect(401);
   });
 
   it('allows access to protected routes with a valid token', async () => {
     const login = await request(app.getHttpServer())
       .post('/auth/login')
+      .set('x-api-key', TEST_API_KEY)
       .send({ email, password })
       .expect(200);
 
     const res = await request(app.getHttpServer())
       .get('/users')
+      .set('x-api-key', TEST_API_KEY)
       .set('Authorization', `Bearer ${login.body.accessToken}`)
       .expect(200);
 
@@ -119,6 +146,7 @@ describe('Auth (e2e)', () => {
   it('denies access with an expired/garbage token', async () => {
     await request(app.getHttpServer())
       .get('/users')
+      .set('x-api-key', TEST_API_KEY)
       .set('Authorization', 'Bearer garbage-token')
       .expect(401);
   });
