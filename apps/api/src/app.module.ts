@@ -6,6 +6,7 @@ import { AppService } from './app.service.js';
 import { AuthModule } from './auth/auth.module.js';
 import { ApiKeyGuard } from './auth/guards/api-key.guard.js';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
+import { BrandsModule } from './brands/brands.module.js';
 import { CategoriesModule } from './categories/categories.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { UsersModule } from './users/users.module.js';
@@ -20,6 +21,7 @@ import { UsersModule } from './users/users.module.js';
     AuthModule,
     UsersModule,
     CategoriesModule,
+    BrandsModule,
   ],
   controllers: [AppController],
   providers: [
