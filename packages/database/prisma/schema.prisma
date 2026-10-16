@@ -53,3 +53,18 @@ model Brand {
 
   @@index([isActive, createdAt])
 }
+
+model Image {
+  id           String   @id @default(uuid())
+  originalName String
+  storageKey   String   @unique
+  mimeType     String
+  size         Int
+  width        Int?
+  height       Int?
+  altText      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([createdAt])
+}

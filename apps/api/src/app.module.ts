@@ -8,6 +8,7 @@ import { ApiKeyGuard } from './auth/guards/api-key.guard.js';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
 import { BrandsModule } from './brands/brands.module.js';
 import { CategoriesModule } from './categories/categories.module.js';
+import { ImagesModule } from './images/images.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { UsersModule } from './users/users.module.js';
 
@@ -22,6 +23,7 @@ import { UsersModule } from './users/users.module.js';
     UsersModule,
     CategoriesModule,
     BrandsModule,
+    ImagesModule,
   ],
   controllers: [AppController],
   providers: [
