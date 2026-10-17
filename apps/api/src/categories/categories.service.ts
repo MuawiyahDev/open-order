@@ -160,7 +160,24 @@ export class CategoriesService {
       throw new NotFoundException('Category not found');
     }
 
-    await this.prisma.client.category.delete({ where: { id } });
+    try {
+      await this.prisma.client.category.delete({ where: { id } });
+    } catch (error) {
+      throw this.mapReferencedViolation(error);
+    }
+  }
+
+  private mapReferencedViolation(error: unknown): unknown {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      (error.code === 'P2003' || error.code === 'P2014')
+    ) {
+      return new ConflictException(
+        'Category cannot be deleted because it is still referenced by products',
+      );
+    }
+
+    return error;
   }
 
   private async ensureNameAvailable(name: string): Promise<void> {

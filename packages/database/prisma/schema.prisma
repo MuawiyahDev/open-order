@@ -33,38 +33,87 @@ model RefreshToken {
 }
 
 model Category {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  slug      String   @unique
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
 
   @@index([isActive, createdAt])
 }
 
 model Brand {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  slug      String   @unique
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
 
   @@index([isActive, createdAt])
 }
 
 model Image {
-  id           String   @id @default(uuid())
+  id           String         @id @default(uuid())
   originalName String
-  storageKey   String   @unique
+  storageKey   String         @unique
   mimeType     String
   size         Int
   width        Int?
   height       Int?
   altText      String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  products     ProductImage[]
 
   @@index([createdAt])
+}
+
+model Product {
+  id                String         @id @default(uuid())
+  name              String
+  slug              String         @unique
+  description       String?
+  shortDescription  String?
+  sku               String?        @unique
+  categoryId        String
+  category          Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  brandId           String?
+  brand             Brand?         @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  unit             String?
+  sellingPrice      Decimal        @db.Decimal(12, 2)
+  compareAtPrice    Decimal?       @db.Decimal(12, 2)
+  stockQuantity     Int            @default(0)
+  lowStockThreshold Int?
+  weight            Decimal?       @db.Decimal(12, 3)
+  length            Decimal?       @db.Decimal(12, 2)
+  width             Decimal?       @db.Decimal(12, 2)
+  height            Decimal?       @db.Decimal(12, 2)
+  isActive          Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  images            ProductImage[]
+
+  @@index([categoryId, createdAt])
+  @@index([brandId, createdAt])
+  @@index([isActive, createdAt])
+  @@index([stockQuantity])
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  imageId   String
+  image     Image    @relation(fields: [imageId], references: [id], onDelete: Restrict)
+  sortOrder Int      @default(0)
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, imageId])
+  @@index([productId, sortOrder])
 }
