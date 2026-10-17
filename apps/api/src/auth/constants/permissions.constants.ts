@@ -12,6 +12,12 @@ export const Permissions = {
   brand: ['brand:read', 'brand:create', 'brand:update', 'brand:delete'],
   image: ['image:read', 'image:create', 'image:delete'],
   product: ['product:read', 'product:create', 'product:update', 'product:delete'],
+  customer: [
+    'customer:read',
+    'customer:create',
+    'customer:update',
+    'customer:delete',
+  ],
 } as const;
 
 export type Permission = (typeof Permissions)[keyof typeof Permissions][number];
@@ -27,6 +33,7 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     ...Permissions.brand,
     ...Permissions.image,
     ...Permissions.product,
+    ...Permissions.customer,
   ] as readonly Permission[],
   [Role.ADMIN]: [
     ...Permissions.admin,
@@ -34,5 +41,6 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     ...Permissions.brand,
     ...Permissions.image,
     ...Permissions.product,
+    ...Permissions.customer,
   ] as readonly Permission[],
 };
